@@ -159,7 +159,7 @@ for j in range(len(data_int[0])):
 bounds_tr=bounds_tr.astype(np.int64)
 
 #for numSol in [100]:
-for numSol in [10]:
+for numSol in [1]:
     print("########################## Number of Nurses:",num_nurses," NumSol: ",numSol," ##########################")
     try:
         os.remove(directory+'/result_N'+str(num_nurses)+'.csv')
