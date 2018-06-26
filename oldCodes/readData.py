@@ -91,11 +91,11 @@ def findConstraints(dataTensor,variables,orderingNotImp,extraConstraints,repeatD
             if maxConsNonZero!=maxPossible and maxConsNonZero>0:
                 print('max cons NonZero: ',maxConsNonZero)
 
-def saveConstraints(dataTensor,variables,orderingNotImp,repeatDim,ind,num_nurses,direc,seed,tag):
+def saveConstraints(dataTensor,variables,orderingNotImp,repeatDim,ind,num_nurses,direc,seed):
     r=set([v for v in range(len(variables)) if v not in repeatDim])
     subsets=cf.split(r,(),repeatDim)
 #    direc='/home/mohit/CLUT/code/data'
-    with open(os.path.join(direc, "result_N"+str(num_nurses)+'_seed'+str(seed)+"_"+tag+".csv") ,"a") as my_csv:
+    with open(os.path.join(direc, "result_N"+str(num_nurses)+'_seed'+str(seed)+".csv") ,"a") as my_csv:
         csvWriter = csv.writer(my_csv,delimiter=',')
         if ind==0:
             row=(['']*2)
@@ -148,11 +148,11 @@ def saveConstraints(dataTensor,variables,orderingNotImp,repeatDim,ind,num_nurses
                 row.extend([''])
             csvWriter.writerow(row)
 
-def saveConstraintsForAll(dataTensor,variables,orderingNotImp,repeatDim,ind,num_nurses,direc,tag):
+def saveConstraintsForAll(dataTensor,variables,orderingNotImp,repeatDim,ind,num_nurses,direc):
     r=set([v for v in range(len(variables)) if v not in repeatDim])
     subsets=cf.split(r,(),repeatDim)
 #    direc='/home/mohit/CLUT/code/data'
-    with open(os.path.join(direc, "result_N"+str(num_nurses)+"_"+tag+"_forAll.csv") ,"a") as my_csv:
+    with open(os.path.join(direc, "result_N"+str(num_nurses)+"_forAll.csv") ,"a") as my_csv:
         csvWriter = csv.writer(my_csv,delimiter=',')
         if ind==0:
             row=(['']*2)
@@ -228,7 +228,7 @@ def vectorizeExtraInfo(extraInfo,variables):
         filterTensors.append(filterTensor)
     return filterTensors,lst,vals
 
-def learnConstraints(dataDir,numSol,num_nurses,numTables,direc,numFiles,seed,extraInfo):
+def learnConstraints(dataDir,numSol,num_nurses,numTables,direc,numFiles,seed):
     random.seed(seed)
 #    print(numFiles,numSol)
     selectFiles=random.sample(range(0,numFiles),numSol)
@@ -246,36 +246,12 @@ def learnConstraints(dataDir,numSol,num_nurses,numTables,direc,numFiles,seed,ext
             orderingNotImp=[2]
             repeatDim=()
             if ind==0:
-                saveConstraints(dataTensor,variables,orderingNotImp,repeatDim,0,num_nurses,direc,seed,str(0))
+                saveConstraints(dataTensor,variables,orderingNotImp,repeatDim,0,num_nurses,direc,seed)
             if ind in selectFiles:
-                saveConstraints(dataTensor,variables,orderingNotImp,repeatDim,1,num_nurses,direc,seed,str(0))
-            
-            skillset=np.zeros([2,num_nurses])
-            skillset[0]=extraInfo
-            skillset[1]=[int(x==0) for x in extraInfo]
-            for i in range(2):
-                if i==0:
-                    tmp=extraInfo
-                if i==1:
-                    tmp=[int(x==0) for x in extraInfo]
-                skillset=np.zeros([num_nurses,int(sum(tmp))])
-                k=0
-                for j in range(len(tmp)):
-                    if tmp[j]==1:
-                        skillset[j][k]=1
-                        k+=1
-                        
-                dim=2
-                updatedVariables=variables[:]
-                updatedVariables[dim]=[x for x, y in zip(variables[dim], tmp) if y == 1]
-                mat=np.tensordot(dataTensor,skillset, [dim,0])
-                if ind==0:
-                    saveConstraints(mat,updatedVariables,orderingNotImp,repeatDim,0,num_nurses,direc,seed,str(0)+str(i))
-                if ind in selectFiles:
-                    saveConstraints(mat,updatedVariables,orderingNotImp,repeatDim,1,num_nurses,direc,seed,str(0)+str(i))
+                saveConstraints(dataTensor,variables,orderingNotImp,repeatDim,1,num_nurses,direc,seed)
         ind+=1
 
-def learnConstraintsForAll(dataDir,num_nurses,numTables,direc,extraInfo):
+def learnConstraintsForAll(dataDir,num_nurses,numTables,direc):
     start=time.clock()
     ind=0
     for fl in glob.glob(dataDir):
@@ -288,45 +264,25 @@ def learnConstraintsForAll(dataDir,num_nurses,numTables,direc,extraInfo):
         orderingNotImp=[2]
         repeatDim=()
         if ind==0:
-            saveConstraintsForAll(dataTensor,variables,orderingNotImp,repeatDim,0,num_nurses,direc,str(0))
-        saveConstraintsForAll(dataTensor,variables,orderingNotImp,repeatDim,1,num_nurses,direc,str(0))
-        
+            saveConstraintsForAll(dataTensor,variables,orderingNotImp,repeatDim,0,num_nurses,direc)
+        saveConstraintsForAll(dataTensor,variables,orderingNotImp,repeatDim,1,num_nurses,direc)
+        ind+=1
     
-        skillset=np.zeros([2,num_nurses])
-        skillset[0]=extraInfo
-        skillset[1]=[int(x==0) for x in extraInfo]
+#    for i in range(numTables-1):
+#        fileName = sys.argv[i+3]
+#        extraInfo = readCSV(fileName)
 #        filterTensors,lst,vals=vectorizeExtraInfo(extraInfo,variables)
-        for i in range(2):
-            if i==0:
-                tmp=extraInfo
-            if i==1:
-                tmp=[int(x==0) for x in extraInfo]
-            skillset=np.zeros([num_nurses,int(sum(tmp))])
-            k=0
-            for j in range(len(tmp)):
-                if tmp[j]==1:
-                    skillset[j][k]=1
-                    k+=1
-                    
-            dim=2
-            updatedVariables=variables[:]
-            updatedVariables[dim]=[x for x, y in zip(variables[dim], tmp) if y == 1]
-    #        updatedVariables[dim]=[x for x in variables[dim] if x in lst[i]]
-#            print(skillset.shape)
-#            print(dataTensor.shape)
-            mat=np.tensordot(dataTensor,skillset, [dim,0])
-#            print(mat.shape)
+#        for i in range(len(vals)):
+#            dim=int(extraInfo[0,0])
+#            updatedVariables=variables[:]
+#            updatedVariables[dim]=[x for x in variables[dim] if x in lst[i]]
+#            mat=np.tensordot(filterTensors[i],dataTensor, [1,dim])
 #            for j in range(dim):
 #                mat=np.swapaxes(mat,j,j+1)
 #            print(mat.shape)
-#            print("\nConstraints for filter: ",i)
-            if ind==0:
-                saveConstraintsForAll(mat,updatedVariables,orderingNotImp,repeatDim,0,num_nurses,direc,str(0)+str(i))
-            saveConstraintsForAll(mat,updatedVariables,orderingNotImp,repeatDim,1,num_nurses,direc,str(0)+str(i))
-        ind+=1
-#        findConstraints(mat,updatedVariables,orderingNotImp,extraConstraints,repeatDim)
-#        saveConstraints(dataTensor,variables,orderingNotImp,repeatDim,1)
-    
+#            print("\nConstraints for filter: ", vals[i])
+#            findConstraints(mat,updatedVariables,orderingNotImp,extraConstraints,repeatDim)
+#            saveConstraints(dataTensor,variables,orderingNotImp,repeatDim,1)
     print("\nTime Taken: ",time.clock()-start,' secs')
 
 
