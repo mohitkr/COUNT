@@ -78,25 +78,59 @@ def saveConstraintsForAll(dataTensor,variables,orderingNotImp,ind,num_nurses,dir
                 
                 sumTensor_max,sumTensor_min=cf.tensorSum(idTensor,sumSet, np.array(variables)[list(newset)],0)
                 row.extend([sumTensor_min])
-                row.extend([sumTensor_max]) 
+#                if sumTensor_min==maxPossible:
+#                    row.extend([0]) 
+#                else:
+#                    row.extend([sumTensor_min]) 
+                    
+                if sumTensor_max==maxPossible:
+                    row.extend([0]) 
+                else:
+                    row.extend([sumTensor_max]) 
                 if len(set(subset[1]))==1 and len(set(orderingNotImp) & set(subset[1]))==0:
                     minConsZero,maxConsZero,minConsNonZero,maxConsNonZero = cf.tensorConsZero(idTensor,sumSet, np.array(variables)[list(newset)])
                     row.extend([minConsZero])
-                    row.extend([maxConsZero])
+#                    if minConsZero==maxPossible:
+#                        row.extend([0]) 
+#                    else:
+#                        row.extend([minConsZero]) 
+                        
+                    if maxConsZero==maxPossible:
+                        row.extend([0]) 
+                    else:
+                        row.extend([maxConsZero]) 
+#                    row.extend([maxConsZero])
                     row.extend([minConsNonZero])
-                    row.extend([maxConsNonZero])
+#                    if minConsNonZero==maxPossible:
+#                        row.extend([0]) 
+#                    else:
+#                        row.extend([minConsNonZero]) 
+                        
+                    if maxConsNonZero==maxPossible:
+                        row.extend([0]) 
+                    else:
+                        row.extend([maxConsNonZero]) 
+#                    row.extend([maxConsNonZero])
                     
                 else:
                     row.extend(['']*4)
                 row.extend([''])
             csvWriter.writerow(row)
 
+def savePref(dataTensor,nurse_preference):
+    accept=1
+    for i in range(len(nurse_preference)):
+        if dataTensor[nurse_preference[i][0],nurse_preference[i][1],i] != 0:
+            accept=0
+            break
+    return accept
 
-def learnConstraintsForAll(directory,num_nurses,extraInfo,bk,mt,hs):
+def learnConstraintsForAll(directory,num_nurses,extraInfo,bk,mt,hs,test,nurse_preference):
     tag=str(bk)+str(mt)+str(hs)
-    start=time.clock()
+#    start=time.clock()
     ind=0
-    for fl in glob.glob(directory+'/solutions'):
+    prefSatisfaction=[]
+    for fl in glob.glob(directory+'/solutions/*.csv'):
         data = readCSV(fl)
         dataTensor,variables=cleanData(data)
         lenVar=[]
@@ -132,5 +166,9 @@ def learnConstraintsForAll(directory,num_nurses,extraInfo,bk,mt,hs):
                     saveConstraintsForAll(mat,updatedVariables,orderingNotImp,0,num_nurses,directory,tag+str(0)+str(i))
                 saveConstraintsForAll(mat,updatedVariables,orderingNotImp,1,num_nurses,directory,tag+str(0)+str(i))
         ind+=1
+        
+        if test==1:
+            prefSatisfaction.append(savePref(dataTensor,nurse_preference))
     
-    print("\nTime Taken: ",time.clock()-start,' secs')
+#    print("\nTime Taken: ",time.clock()-start,' secs')
+    return prefSatisfaction

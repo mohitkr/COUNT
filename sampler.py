@@ -5,24 +5,14 @@ Created on Tue Apr 17 10:58:20 2018
 
 @author: mohit
 """
-import glob
 import os
-from scipy import stats
 import random
-import time
-import sys
-import shutil
-
 import csv
 import numpy as np
-import pandas as pd
 from gurobipy import *
 import os.path
-import itertools as it
-import constraintFormulation as cf
-import readData_bk as rd
     
-def generateSample(num_nurses,num_days,num_shifts,numSam,extraConstPerc,nurse_skill,bounds,subset1_bounds,subset2_bounds,directory,bk,mt):
+def generateSample(num_nurses,num_days,num_shifts,numSam,extraConstPerc,nurse_skill,nurse_preference,bounds,subset1_bounds,subset2_bounds,directory,bk,mt):
 #    print(bounds)
     
     if bk==1:
