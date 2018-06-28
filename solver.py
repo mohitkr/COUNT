@@ -270,10 +270,10 @@ bounds_prev1=np.zeros([num_constrType,num_constr])
 prec_prev=0
 rec_prev=0
 time_prev=0
-for numSol in [1, 10, 25, 50]:
-    print("############ Number of examples used: ",numSol," ############")
+for numSol in [1, 10, 20, 40]:
+    print("\n############ Number of examples used: ",numSol," ############")
     
-    numSeed=1
+    numSeed=4
     tot_rec=np.zeros(numSeed)
     tot_pre=np.zeros(numSeed)
     tot_fn=np.zeros(numSeed)
